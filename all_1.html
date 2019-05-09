@@ -76,6 +76,8 @@
 
     <li><label>Categories</label></li>
 
+        
+            <li><a href="dart_cat.html">dart</a></li>
          
 
       </ul>
@@ -98,65 +100,180 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="android_uri_0.html">
+                <a class="clearlink" href="15572938047045.html">
                 
-                  <h1>Uri暴露错误 FileUriExposedException</h1>
+                  <h1>在Fragment中使用ViewModel</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<p>安卓7.0遇到 android.os.FileUriExposedException: file:///storage/emulated.. exposed beyond app through Intent.getData()</p>
+                        	<p>项目源码：<a href="https://github.com/fungkamwah/viewmodel_demo">https://github.com/fungkamwah/viewmodel_demo</a></p>
 
-<h2 id="toc_0">解决方法</h2>
+<h3 id="toc_0">Model类</h3>
 
-<h3 id="toc_1">1 在AndroidManifest.xml中添加如下代码</h3>
+<p>Message.java</p>
 
-<pre><code class="language-markup">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
-&lt;manifest xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;
-    ...
-    &lt;application
-        ...
-        &lt;provider
-            android:name=&quot;android.support.v4.content.FileProvider&quot;
-            android:authorities=&quot;你的包名.provider&quot;
-            android:exported=&quot;false&quot;
-            android:grantUriPermissions=&quot;true&quot;&gt;
-            &lt;meta-data
-                android:name=&quot;android.support.FILE_PROVIDER_PATHS&quot;
-                android:resource=&quot;@xml/provider_paths&quot;/&gt;
-        &lt;/provider&gt;
-    &lt;/application&gt;
-&lt;/manifest&gt;
+<pre><code class="language-java">package cn.mikezz.viewmodel_demo;
+
+/**
+ * Model
+ *
+ * Created by Mike(175511@qq.com) on 2019-05-08
+ */
+public class Message {
+
+    public String string;
+
+    public Message() {
+        this.string = &quot;init&quot;;
+    }
+}
+
 </code></pre>
 
-<h3 id="toc_2">2 在res目录下新建一个xml文件夹，并且新建一个provider_paths的xml文件</h3>
+<h3 id="toc_1">ViewModel类</h3>
 
-<pre><code class="language-markup">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
-&lt;paths xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;&gt;
-    &lt;external-path name=&quot;external_files&quot; path=&quot;.&quot;/&gt;
-&lt;/paths&gt;
+<p>MessageViewModel.java</p>
+
+<pre><code class="language-java">package cn.mikezz.viewmodel_demo;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
+
+/**
+ * ViewModel
+ *
+* Created by Mike(175511@qq.com) on 2019-05-08
+*/
+public  class MessageViewModel extends ViewModel   {
+
+    //被观察的liveData
+    public final MutableLiveData&lt;Message&gt; liveData = new MutableLiveData&lt;&gt;();
+
+
+}
+
 </code></pre>
 
-<h3 id="toc_3">3 修改代码</h3>
+<h3 id="toc_2">Fragment类</h3>
 
-<pre><code class="language-java">Uri uri = null;
-String filePath =&quot;&quot;;
-        if(Build.VERSION.SDK_INT&gt;= Build.VERSION_CODES.N){
-            //android 7.0
-            uri = FileProvider.getUriForFile(
-                    AppUtil.getApplicationContext(),&quot;包名.provider&quot;,
-                    new File(filePath));
+<p>ContentFragment.java</p>
+
+<pre><code class="language-java">package cn.mikezz.viewmodel_demo;
+
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
+
+/**
+ * Created by Mike(175511@qq.com) on 2019-05-08
+ */
+public class ContentFragment extends Fragment {
+
+    MessageViewModel viewModel;
+
+    /**
+     * 获取ContentFragment实例，setArguments
+     * @param example
+     * @return
+     */
+    public static ContentFragment getInstance(String example){
+        ContentFragment fragment = new ContentFragment();
+        Bundle bundle = new Bundle();
+        bundle.putString(&quot;key&quot;,example);
+        fragment.setArguments(bundle);
+        return fragment;
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.layout_fragment,null);
+        Bundle b =getArguments();
+        String srt = b.getString(&quot;key&quot;);//没用到的
+        final TextView tv = view.findViewById(R.id.tv);
+
+        viewModel.liveData.observe(this, new Observer&lt;Message&gt;() {
+            @Override
+            public void onChanged(Message message) {
+                //model发生了变化，更新UI内容
+                tv.setText(message.string);
+            }
+        });
+        return view;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        //取得activity的对应的viewModel
+        viewModel = ViewModelProviders.of(getActivity()).get(MessageViewModel.class);
+    }
+}
+
+</code></pre>
+
+<h3 id="toc_3">Activity</h3>
+
+<p>MainActivity.java</p>
+
+<pre><code class="language-java">package cn.mikezz.viewmodel_demo;
+
+import android.os.Bundle;
+import android.view.View;
+
+import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.ViewModelProviders;
+
+public class MainActivity extends FragmentActivity implements View.OnClickListener {
+
+    MessageModel viewModel;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        findViewById(R.id.btn1).setOnClickListener(this);
+        findViewById(R.id.btn2).setOnClickListener(this);
+
+        //以下几行，在ContentFagment的onCreate方法之前给viewModel的liveData . setValue
+        ContentFragment fragment = ContentFragment.getInstance(&quot;just show example&quot;);
+        viewModel = ViewModelProviders.of(this).get(MessageModel.class);
+        viewModel.liveData.setValue(new Message());
+        //Android X 中getFragmentManager()已过时
+        getSupportFragmentManager().beginTransaction().add(R.id.content, fragment).commit();
+    }
+
+    @Override
+    public void onClick(View v) {
+        //修改model的值，并给liveData重新setValue
+        Message message = viewModel.liveData.getValue();
+        switch (v.getId()) {
+            case R.id.btn1:
+                message.string = &quot;clicked button1&quot;;
+                break;
+            case R.id.btn2:
+                message.string = &quot;clicked button2&quot;;
+                break;
+
         }
-        else {
-            Uri.fromFile(new File(filePath));
-        }
+        //setValue在Ui线程，postValue可以在非UI线程
+        viewModel.liveData.postValue(message);
+
+    }
+}
+
 </code></pre>
 
-<hr/>
+<h3 id="toc_4">运行截图</h3>
 
-<p><em>补充：按照以上步骤修改代码之后，发现：在4.4版本以下sdk运行时，拍照返回报错，所以，这里需要判断sdk版本再做处理，当sdk版本大于4.4时，使用以上方法；当sdk版本小于等于4.4时，uri相关代码不做修改。</em></p>
-
-<p><img src="media/15571324424334/1495610107919007923.jpeg" alt="1495610107919007923"/></p>
+<p><img src="media/15572938047045/15572951934342.jpg" alt="" style="width:346px;"/></p>
 
                         
                       </div>
@@ -165,7 +282,7 @@ String filePath =&quot;&quot;;
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2019/5/6</span>
+                    <span class="date">2019/5/8</span>
                     
           				   
                   </div>
@@ -190,7 +307,7 @@ String filePath =&quot;&quot;;
 			  </div>
 			  <div class="large-6 columns">
 			<p class="text-right" style="padding-top:25px;">
-			
+			 <a href="all_2.html">&raquo; Next Page</a> 
 			</p>
 			  </div>
 			</div>
@@ -230,6 +347,8 @@ String filePath =&quot;&quot;;
                 <div class="side-content">
 
       	<p class="cat-list">
+        
+            <a href="dart_cat.html"><strong>dart</strong></a>
          
         </p>
 
@@ -244,6 +363,12 @@ String filePath =&quot;&quot;;
                 <div class="side-content">
                 <ul class="posts-list">
 	      
+		      
+			      <li class="post">
+			        <a href="15573668182178.html">Java2Dart的20分钟介绍</a>
+			      </li>
+		     
+		  
 		      
 			      <li class="post">
 			        <a href="15572938047045.html">在Fragment中使用ViewModel</a>

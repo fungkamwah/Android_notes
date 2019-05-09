@@ -76,6 +76,8 @@
 
     <li><label>Categories</label></li>
 
+        
+            <li><a href="dart_cat.html">dart</a></li>
          
 
       </ul>
@@ -98,180 +100,289 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
-                <a class="clearlink" href="15572938047045.html">
+                <a class="clearlink" href="15573668182178.html">
                 
-                  <h1>在Fragment中使用ViewModel</h1>
+                  <h1>Java2Dart的20分钟介绍</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
                         
-                        	<p>项目源码：<a href="https://github.com/fungkamwah/viewmodel_demo">https://github.com/fungkamwah/viewmodel_demo</a></p>
+                        	<h3 id="toc_0">1.dartpad</h3>
 
-<h3 id="toc_0">Model类</h3>
+<p><a href="https://dartpad.cn/">https://dartpad.cn/</a><br/>
+<img src="media/15573668182178/15573675763182.jpg" alt="" style="width:1280px;"/></p>
 
-<p>Message.java</p>
+<h3 id="toc_1">2.创建一个简单的 Dart 类</h3>
 
-<pre><code class="language-java">package cn.mikezz.viewmodel_demo;
-
-/**
- * Model
- *
- * Created by Mike(175511@qq.com) on 2019-05-08
- */
-public class Message {
-
-    public String string;
-
-    public Message() {
-        this.string = &quot;init&quot;;
+<pre><code class="language-dart">class Bicycle {
+  int cadence;
+  int speed;
+  int gear;
+  
+  Bicycle(this.cadence, this.speed, this.gear);
+  //等同以下代码
+  /**
+  Bicycle(int cadence, int speed, int gear) {
+  this.cadence = cadence;
+  this.speed = speed;
+  this.gear = gear;
     }
+    */
+    
+    //toString 
+    @override
+    String toString() =&gt; &#39;Bicycle: $speed mph&#39;;
+}
+
+void main() {
+//实例化，并打印
+ var bike =  Bicycle(2, 0, 1);
+ //等同于
+  //var bike = new Bicycle(2, 0, 1);
+  print(bike);
+}
+</code></pre>
+
+<p>RUN看结果：<br/>
+<img src="media/15573668182178/15573681909757.jpg" alt="" style="width:1280px;"/></p>
+
+<p>实现变量私有，相当Java中的private</p>
+
+<pre><code class="language-dart">class Bicycle {
+  int cadence;
+  int _speed = 0;
+  int get speed =&gt; _speed;
+  int gear;
+
+  Bicycle(this.cadence, this.gear);
+
+  void applyBrake(int decrement) {
+    _speed -= decrement;
+  }
+
+  void speedUp(int increment) {
+    _speed += increment;
+  }
+
+  @override
+  String toString() =&gt; &#39;Bicycle: $_speed mph&#39;;
+}
+
+void main() {
+  var bike = Bicycle(2, 1);
+  print(bike);
+  bike.speedUp(10);
+  print(bike);
+  bike.speedUp(30);
+  print(bike);
+  bike.applyBrake(5);
+  print(bike);
+  bike.applyBrake(5);
+  print(bike);
+  bike.applyBrake(5);
+  print(bike);
+}
+</code></pre>
+
+<p><img src="media/15573668182178/15573686370678.jpg" alt="" style="width:1280px;"/></p>
+
+<h3 id="toc_2">3. 使用可选参数（而不是使用重载）</h3>
+
+<p>Java 代码中，使用了重载构造函数的方法，该方法在 Java 中很普遍，重载的构造函数和之前的构造函数具有相同的方法名，但是在方法的参数个数或者参数类型上有些许不同。Dart 并不支持构造函数的重载，而采用了另外一种方法来处理这种情况.</p>
+
+<pre><code class="language-dart">Rectangle({this.origin = const Point(0, 0), this.width = 0, this.height = 0});
+</code></pre>
+
+<p>这是一个矩形类的构造方法，但是其参数是可选的，因为：<br/>
+1.它使用了花括号 <code>{}</code>；2.参数都有确定的默认值。</p>
+
+<p>示例：</p>
+
+<pre><code class="language-dart">class Point {
+  final int x;
+  final int y;
+  const Point(this.x, this.y);
+}
+
+class Rectangle {
+  Point origin;
+  int width;
+  int height;
+  Rectangle({this.origin = const Point(0, 0), this.width = 0, this.height = 0});
+
+  @override
+  String toString() =&gt;
+      &#39;Origin: (${origin.x}, ${origin.y}), width: $width, height: $height&#39;;
+}
+
+main() {
+  print(Rectangle(origin: const Point(10, 20), width: 100, height: 200));
+  print(Rectangle(origin: const Point(10, 10)));
+  print(Rectangle(width: 200));
+  print(Rectangle());
+}
+
+  
+}
+
+main() {
+  print(Rectangle(origin: const Point(10, 20), width: 100, height: 200));
+  print(Rectangle(origin: const Point(10, 10)));
+  print(Rectangle(width: 200));
+  print(Rectangle());
+}
+</code></pre>
+
+<p><img src="media/15573668182178/15573695190466.jpg" alt="" style="width:1280px;"/></p>
+
+<h3 id="toc_3">4 工厂模式</h3>
+
+<p>4.1 导入math，abstarct抽象类实现</p>
+
+<pre><code class="language-dart">import &#39;dart:math&#39;;
+
+abstract class Shape {
+  num get area;
+}
+
+class Circle implements Shape {
+  final num radius;
+  Circle(this.radius);
+  num get area =&gt; pi * pow(radius, 2);
+}
+
+class Square implements Shape {
+  final num side;
+  Square(this.side);
+  num get area =&gt; pow(side, 2);
+}
+
+main() {
+  final circle = Circle(2);
+  final square = Square(2);
+  print(circle.area);
+  print(square.area);
+}
+</code></pre>
+
+<p>4.2 工厂模式</p>
+
+<pre><code class="language-dart">import &#39;dart:math&#39;;
+
+abstract class Shape {
+  //工厂模式2 ，工厂构造函数
+  factory Shape(String type) {
+    if (type == &#39;circle&#39;) return Circle(2);
+    if (type == &#39;square&#39;) return Square(2);
+    throw &#39;Can\&#39;t create $type.&#39;;
+  }
+  num get area;
+}
+
+class Circle implements Shape {
+  final num radius;
+  Circle(this.radius);
+  num get area =&gt; pi * pow(radius, 2);
+}
+
+class Square implements Shape {
+  final num side;
+  Square(this.side);
+  num get area =&gt; pow(side, 2);
+}
+
+//工厂模式1，工厂方法
+Shape shapeFactory(String type) {
+  if (type == &#39;circle&#39;) return Circle(2);
+  if (type == &#39;square&#39;) return Square(2);
+  throw &#39;Can\&#39;t create $type.&#39;;//抛出异常
+}
+
+main() {
+  //try/catch
+  try {
+    final circle = shapeFactory(&#39;circle&#39;);
+    final square = shapeFactory(&#39;square&#39;);
+    print(circle.area);
+    print(square.area);
+
+    final circle2 = Shape(&#39;circle&#39;);
+    final square2 = Shape(&#39;square&#39;);
+    print(circle2.area);
+    print(square2.area);
+  } catch (err) {
+    print(err);
+  }
+}
+</code></pre>
+
+<p><img src="media/15573668182178/15573711869547.jpg" alt="" style="width:1280px;"/></p>
+
+<h3 id="toc_4">5 接口的实现</h3>
+
+<p>Dart 语言并没有提供 interface 关键字，但是每一个类都隐式地定义了一个接口。即每一个类都是一个接口。</p>
+
+<pre><code class="language-dart">import &#39;dart:math&#39;;
+
+abstract class Shape {
+  factory Shape(String type) {
+    if (type == &#39;circle&#39;) return Circle(2);
+    if (type == &#39;square&#39;) return Square(2);
+    throw &#39;Can\&#39;t create $type.&#39;;
+  }
+  num get area;
+}
+
+//实现抽象类
+class Circle implements Shape {
+  final num radius;
+  Circle(this.radius);
+  num get area =&gt; pi * pow(radius, 2);
+}
+
+class Square implements Shape {
+  final num side;
+  Square(this.side);
+  num get area =&gt; pow(side, 2);
+}
+
+//实现非抽象类
+class CircleMock implements Circle {
+  num area;
+  num radius;
+}
+
+main() {
+  final circle = Shape(&#39;circle&#39;);
+  final square = Shape(&#39;square&#39;);
+  print(circle.area);
+  print(square.area);
 }
 
 </code></pre>
 
-<h3 id="toc_1">ViewModel类</h3>
+<h3 id="toc_5">6 函数式编程</h3>
 
-<p>MessageViewModel.java</p>
+<p>非函数式示例：</p>
 
-<pre><code class="language-java">package cn.mikezz.viewmodel_demo;
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
+<pre><code class="language-dart">String scream(int length) =&gt; &quot;A${&#39;a&#39; * length}h!&quot;;
 
-/**
- * ViewModel
- *
-* Created by Mike(175511@qq.com) on 2019-05-08
-*/
-public  class MessageViewModel extends ViewModel   {
-
-    //被观察的liveData
-    public final MutableLiveData&lt;Message&gt; liveData = new MutableLiveData&lt;&gt;();
-
-
+main() {
+  final values = [1, 2, 3, 5, 10, 50];
+  values.map(scream).forEach(print);
+  
+  print(&quot;-------------&quot;);
+  
+  Iterable list = values.map(scream);
+  list.forEach(print);
+    
+  
+  print(&quot;-------------&quot;);
+  
+  
+  values.skip(1).take(3).map(scream).forEach(print);
 }
-
 </code></pre>
-
-<h3 id="toc_2">Fragment类</h3>
-
-<p>ContentFragment.java</p>
-
-<pre><code class="language-java">package cn.mikezz.viewmodel_demo;
-
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
-
-/**
- * Created by Mike(175511@qq.com) on 2019-05-08
- */
-public class ContentFragment extends Fragment {
-
-    MessageViewModel viewModel;
-
-    /**
-     * 获取ContentFragment实例，setArguments
-     * @param example
-     * @return
-     */
-    public static ContentFragment getInstance(String example){
-        ContentFragment fragment = new ContentFragment();
-        Bundle bundle = new Bundle();
-        bundle.putString(&quot;key&quot;,example);
-        fragment.setArguments(bundle);
-        return fragment;
-    }
-
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.layout_fragment,null);
-        Bundle b =getArguments();
-        String srt = b.getString(&quot;key&quot;);//没用到的
-        final TextView tv = view.findViewById(R.id.tv);
-
-        viewModel.liveData.observe(this, new Observer&lt;Message&gt;() {
-            @Override
-            public void onChanged(Message message) {
-                //model发生了变化，更新UI内容
-                tv.setText(message.string);
-            }
-        });
-        return view;
-    }
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        //取得activity的对应的viewModel
-        viewModel = ViewModelProviders.of(getActivity()).get(MessageViewModel.class);
-    }
-}
-
-</code></pre>
-
-<h3 id="toc_3">Activity</h3>
-
-<p>MainActivity.java</p>
-
-<pre><code class="language-java">package cn.mikezz.viewmodel_demo;
-
-import android.os.Bundle;
-import android.view.View;
-
-import androidx.fragment.app.FragmentActivity;
-import androidx.lifecycle.ViewModelProviders;
-
-public class MainActivity extends FragmentActivity implements View.OnClickListener {
-
-    MessageModel viewModel;
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        findViewById(R.id.btn1).setOnClickListener(this);
-        findViewById(R.id.btn2).setOnClickListener(this);
-
-        //以下几行，在ContentFagment的onCreate方法之前给viewModel的liveData . setValue
-        ContentFragment fragment = ContentFragment.getInstance(&quot;just show example&quot;);
-        viewModel = ViewModelProviders.of(this).get(MessageModel.class);
-        viewModel.liveData.setValue(new Message());
-        //Android X 中getFragmentManager()已过时
-        getSupportFragmentManager().beginTransaction().add(R.id.content, fragment).commit();
-    }
-
-    @Override
-    public void onClick(View v) {
-        //修改model的值，并给liveData重新setValue
-        Message message = viewModel.liveData.getValue();
-        switch (v.getId()) {
-            case R.id.btn1:
-                message.string = &quot;clicked button1&quot;;
-                break;
-            case R.id.btn2:
-                message.string = &quot;clicked button2&quot;;
-                break;
-
-        }
-        //setValue在Ui线程，postValue可以在非UI线程
-        viewModel.liveData.postValue(message);
-
-    }
-}
-
-</code></pre>
-
-<h3 id="toc_4">运行截图</h3>
-
-<p><img src="media/15572938047045/15572951934342.jpg" alt="" style="width:346px;"/></p>
 
                         
                       </div>
@@ -280,8 +391,10 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
                 <div class="read-more clearfix">
                   <div class="more-left left">
                   
-                    <span class="date">2019/5/8</span>
-                    
+                    <span class="date">2019/5/9</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='dart_cat.html'>dart</a></span>
           				   
                   </div>
                   <div class="more-right right">
@@ -345,6 +458,8 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
                 <div class="side-content">
 
       	<p class="cat-list">
+        
+            <a href="dart_cat.html"><strong>dart</strong></a>
          
         </p>
 
@@ -359,6 +474,12 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
                 <div class="side-content">
                 <ul class="posts-list">
 	      
+		      
+			      <li class="post">
+			        <a href="15573668182178.html">Java2Dart的20分钟介绍</a>
+			      </li>
+		     
+		  
 		      
 			      <li class="post">
 			        <a href="15572938047045.html">在Fragment中使用ViewModel</a>
